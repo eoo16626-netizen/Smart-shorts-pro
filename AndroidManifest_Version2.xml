@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.smartshortspro.automation">
+
+    <!-- ============================================================================ -->
+    <!-- PERMISSIONS                                                                -->
+    <!-- ============================================================================ -->
+
+    <!-- Internet permission for downloading videos -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- File storage permissions (Android 12 and below) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Media permissions (Android 13+) -->
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_VIDEO"
+        android:minSdkVersion="33" />
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_IMAGES"
+        android:minSdkVersion="33" />
+
+    <!-- ============================================================================ -->
+    <!-- APPLICATION                                                                -->
+    <!-- ============================================================================ -->
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:debuggable="false"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="false"
+        android:theme="@style/Theme.SmartShortsPro"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="33">
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SmartShortsPro"
+            android:windowSoftInputMode="adjustResize">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <!-- ============================================================================ -->
+        <!-- SERVICES (Optional for background processing)                              -->
+        <!-- ============================================================================ -->
+
+        <!-- Background video processing service -->
+        <service
+            android:name=".services.VideoProcessingService"
+            android:exported="false"
+            android:permission="android.permission.INTERNET"
+            tools:ignore="ExportedService" />
+
+    </application>
+
+</manifest>

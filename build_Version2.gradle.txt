@@ -1,0 +1,214 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'com.chaquo.python'
+}
+
+android {
+    namespace "com.smartshortspro.automation"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.smartshortspro.automation"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // Native library architectures
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+
+        // Chaquopy Python configuration
+        python {
+            version "3.11"
+            buildPython "python3.11"
+            staticExtensionsPackages = ['chaquopy']
+        }
+
+        // Vector drawable support
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    // Build types configuration
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+
+            // Build properties for release
+            buildConfigField "boolean", "ENABLE_LOGGING", "false"
+        }
+
+        debug {
+            debuggable true
+            minifyEnabled false
+            
+            // Build properties for debug
+            buildConfigField "boolean", "ENABLE_LOGGING", "true"
+        }
+    }
+
+    // Java/Kotlin compatibility
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    // Kotlin compiler options
+    kotlinOptions {
+        jvmTarget = '11'
+        freeCompilerArgs += [
+            '-opt-in=kotlin.RequiresOptIn',
+            '-Xjvm-default=all'
+        ]
+    }
+
+    // Build features
+    buildFeatures {
+        viewBinding true
+        compose false
+        aidl false
+        renderScript false
+        resValues false
+        shaders false
+    }
+
+    // Lint options
+    lint {
+        disable 'MissingTranslation', 'ExtraTranslation'
+        abortOnError false
+    }
+}
+
+// ============================================================================
+// DEPENDENCIES
+// ============================================================================
+
+dependencies {
+    // ========== ANDROIDX & CORE ==========
+    
+    // Core Kotlin Extensions
+    implementation 'androidx.core:core-ktx:1.13.1'
+    
+    // AppCompat
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    
+    // Constraint Layout
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Material Design Components
+    implementation 'com.google.android.material:material:1.11.0'
+
+    // ========== CHAQUOPY (PYTHON RUNTIME - CORE) ==========
+    
+    // Chaquopy for running Python 3.11 natively in APK
+    implementation 'com.chaquo.python:android:14.0.2'
+
+    // ========== NETWORKING ==========
+    
+    // OkHttp for HTTP requests
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
+    
+    // Gson for JSON serialization
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // ========== COROUTINES & ASYNC ==========
+    
+    // Kotlin Coroutines for Android
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    
+    // Kotlin Coroutines Core
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    // ========== LIFECYCLE & VIEWMODEL ==========
+    
+    // Lifecycle Runtime
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    
+    // LiveData
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    
+    // ViewModel
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+
+    // ========== TESTING ==========
+    
+    // JUnit for unit testing
+    testImplementation 'junit:junit:4.13.2'
+    
+    // AndroidX Test Extension
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    
+    // Espresso for UI testing
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+// ============================================================================
+// CHAQUOPY CONFIGURATION
+// ============================================================================
+
+chaquopy {
+    defaultConfig {
+        // Python version to use
+        version "3.11"
+        
+        // Python executable for building
+        buildPython "python3.11"
+
+        // Python packages to install via pip
+        pip {
+            install(
+                // Network & HTTP
+                "requests==2.31.0",
+                "urllib3==2.1.0",
+                
+                // Video Processing
+                "moviepy==1.0.3",
+                "pillow==10.1.0",
+                "numpy==1.24.3",
+                
+                // Optional: Image processing & utilities
+                "imageio==2.32.0"
+            )
+        }
+
+        // Native architectures to build for
+        abi "arm64-v8a"
+        
+        // Static extensions
+        staticExtensionsPackages = ['chaquopy']
+    }
+}
+
+// ============================================================================
+// BUILD CONFIGURATION
+// ============================================================================
+
+// Gradle tasks configuration
+tasks.register('printAppInfo') {
+    doLast {
+        println("========================================")
+        println("Smart Shorts Pro - Build Info")
+        println("========================================")
+        println("App Name: ${defaultConfig.applicationId}")
+        println("Version: ${defaultConfig.versionName} (${defaultConfig.versionCode})")
+        println("Min SDK: ${defaultConfig.minSdk}")
+        println("Target SDK: ${defaultConfig.targetSdk}")
+        println("Java Version: ${compileOptions.sourceCompatibility}")
+        println("Python Version: 3.11")
+        println("Architectures: arm64-v8a, armeabi-v7a")
+        println("========================================")
+    }
+}
+
+// Run info task on build
+gradle.afterProject { task ->
+    if (task.name == 'assemble') {
+        assemble.dependsOn printAppInfo
+    }
+}
