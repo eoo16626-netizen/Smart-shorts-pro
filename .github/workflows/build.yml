@@ -1,81 +1,60 @@
 name: Build Smart Shorts Pro APK
 
 on:
-push:
-branches:
-- main
-- master
-pull_request:
-branches:
-- main
-- master
-workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
 
 jobs:
-build:
-name: Assemble Debug APK
-runs-on: ubuntu-latest
+  build:
+    name: Assemble Debug APK
+    runs-on: ubuntu-latest
 
-steps:
-- name: Checkout Repository
-uses: actions/checkout@v4
-steps:
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-- name: Set Up JDK 17
-uses: actions/setup-java@v4
-with:
-java-version: '17'
-distribution: 'temurin'
 
-- name: Install Gradle 8.1.2
-run: |
-wget -q https://services.gradle.org/distributions/gradle-8.1.2-bin.zip -O /tmp/gradle.zip
-unzip -q /tmp/gradle.zip -d /opt/gradle
-echo "GRADLE_HOME=/opt/gradle/gradle-8.1.2" >> GITHUB_PATH
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-- name: Verify Gradle Installation
-run: gradle --version
+      - name: Install Gradle 8.1.2
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.1.2-bin.zip -O /tmp/gradle.zip
+          sudo unzip -q /tmp/gradle.zip -d /opt/gradle
+          echo "/opt/gradle/gradle-8.1.2/bin" >> $GITHUB_PATH
 
-- name: Generate Gradle Wrapper
-run: |
-gradle wrapper --gradle-version 8.1.2 --distribution-type bin
-chmod +x gradlew
+      - name: Verify Gradle Installation
+        run: gradle --version
 
-- name: Validate Gradle Wrapper Checksum
-run: |
-echo "Wrapper generated dynamically — skipping external validation action."
-ls -la gradle/wrapper/
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.1.2 --distribution-type bin
+          chmod +x gradlew
 
-- name: Set Up Android SDK Path in local.properties
-run: |
-echo "sdk.dir=$`ANDROID_SDK_ROOT" > local.properties
-echo "Generated local.properties:"
-cat local.properties
+      - name: Configure SDK Properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          mkdir -p ~/.gradle
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
-- name: Cache Gradle Packages
-uses: actions/cache@v4
-with:
-path: |
-~/.gradle/caches
-~/.gradle/wrapper
-key: ${{ runner.os }}-gradle-${{ hashFiles('/.gradle', '/gradle-wrapper.properties') }}
-restore-keys: |
-`${{ runner.os }}-gradle-
+      - name: Compile and Assemble Debug APK
+        run: |
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
-- name: Accept Android SDK Licenses
-run: |
-yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-- name: Build Debug APK
-env:
-GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true"
-run: ./gradlew assembleDebug --no-daemon --stacktrace
-
-- name: Upload APK Artifact
-uses: actions/upload-artifact@v4
-with:
-name: Smart-Shorts-Pro-Ultimate-APK
-path: '**/build/outputs/apk/debug/*.apk'
-if-no-files-found: error
-retention-days: 30
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Smart-Shorts-Pro-Ultimate-APK
+          path: |
+            **/build/outputs/apk/debug/*.apk
+          retention-days: 7
+          if-no-files-found: error
