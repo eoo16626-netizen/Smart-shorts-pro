@@ -29,11 +29,11 @@ jobs:
       - name: Setup Gradle Official Action
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.1.2'
+          gradle-version: '8.1.1'
 
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.1.2 --distribution-type bin
+          gradle wrapper --gradle-version 8.1.1 --distribution-type bin
           chmod +x gradlew
 
       - name: Configure SDK Properties
